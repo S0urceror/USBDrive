@@ -2,17 +2,13 @@
 ASM = /Users/mario/Development/msx/Compilers/sjasmplus/build/release/sjasmplus
 #ASM = ~/Development/msx/cpm/cpm M80 =
 ASMFLAGS = --raw=$@ --sym=$(basename $@).sym
-#INCLUDES = #test.inc
 OUTPUT_DIR = ../dist
 KERNEL_DIR = ../kernel
 
-all: $(OUTPUT_DIR)/main.bin $(OUTPUT_DIR)/driver.rom $(OUTPUT_DIR)/chgbnk.bin $(OUTPUT_DIR)/nextor.rom $(OUTPUT_DIR)/flash.com $(OUTPUT_DIR)/usbfiles.com $(OUTPUT_DIR)/insertdisk.com $(OUTPUT_DIR)/ejectdisk.com
+all: $(OUTPUT_DIR)/driver.rom $(OUTPUT_DIR)/chgbnk.bin $(OUTPUT_DIR)/nextor.rom $(OUTPUT_DIR)/usbfiles.com $(OUTPUT_DIR)/insertdisk.com $(OUTPUT_DIR)/ejectdisk.com
 .PHONY: all clean copy nexrom
 
 $(OUTPUT_DIR)/chgbnk.bin: chgbnk.asm
-	$(ASM) $(ASMFLAGS) $< 
-
-$(OUTPUT_DIR)/main.bin: main.asm
 	$(ASM) $(ASMFLAGS) $< 
 
 $(OUTPUT_DIR)/usbfiles.com: usbfiles.asm print_dos.asm ch376s.asm ch376s_helpers.asm driver_helpers.asm
@@ -23,9 +19,6 @@ $(OUTPUT_DIR)/insertdisk.com: insertdisk.asm print_dos.asm ch376s.asm ch376s_hel
 
 $(OUTPUT_DIR)/ejectdisk.com: ejectdisk.asm print_dos.asm ch376s.asm ch376s_helpers.asm driver_helpers.asm nextor_helpers.asm
 	$(ASM) $(ASMFLAGS) $<
-
-$(OUTPUT_DIR)/flash.com: flash.asm
-	$(ASM) $(ASMFLAGS) $< 
 
 $(OUTPUT_DIR)/driver.rom: driver.asm driver_helpers.asm basic_extensions.asm print_bios.asm ch376s.asm ch376s_helpers.asm
 	$(ASM) $(ASMFLAGS) $<
@@ -38,8 +31,7 @@ clean:
 	-rm $(OUTPUT_DIR)/*.rom
 	-rm $(OUTPUT_DIR)/*.com
 	-rm $(OUTPUT_DIR)/*.bin
+	-rm $(OUTPUT_DIR)/*.sym
 
 copy:
 	cp $(OUTPUT_DIR)/main.bin /Volumes/Untitled
-
-#$(KERNEL_DIR)/mknexrom $(KERNEL_DIR)/Nextor-2.1.0-beta2.base.dat $(OUTPUT_DIR)/nextor.rom /d:$(OUTPUT_DIR)/driver.rom /m:$(KERNEL_DIR)/chgbnk.bin
