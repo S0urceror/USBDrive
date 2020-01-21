@@ -29,8 +29,8 @@ CODE_ADD:	equ	0F1D0h
 ;
 
 ;Driver version
-VER_MAIN	equ	0
-VER_SEC		equ	1
+VER_MAIN	equ	1
+VER_SEC		equ	0
 VER_REV		equ	0
 
 ;-----------------------------------------------------------------------------
@@ -180,7 +180,6 @@ DRV_NAME:
     jp  DRV_DIRECT2
     jp  DRV_DIRECT3
     jp  DRV_DIRECT4
-;	jp	DRV_CONFIG
 
 	ds	15
 
@@ -460,61 +459,6 @@ DRV_DIRECT3:
 DRV_DIRECT4:
 	ret
 
-;-----------------------------------------------------------------------------
-;
-; Get driver configuration 
-; (bit 2 of driver flags must be set if this routine is implemented)
-;
-; Input:
-;   A = Configuration index
-;   BC, DE, HL = Depends on the configuration
-;
-; Output:
-;   A = 0: Ok
-;       1: Configuration not available for the supplied index
-;   BC, DE, HL = Depends on the configuration
-;
-; * Get number of drives at boot time (for device-based drivers only):
-;   Input:
-;     A = 1
-;     B = 0 for DOS 2 mode, 1 for DOS 1 mode
-;     C: bit 5 set if user is requesting reduced drive count
-;        (by pressing the 5 key)
-;   Output:
-;     B = number of drives
-;
-; * Get default configuration for drive
-;   Input:
-;     A = 2
-;     B = 0 for DOS 2 mode, 1 for DOS 1 mode
-;     C = Relative drive number at boot time
-;   Output:
-;     B = Device index
-;     C = LUN index
-DRV_CONFIG:
-    dec a
-    jr z,DRV_CONFIG_1
-    dec a
-    jr z,DRV_CONFIG_2
-	ld a,1
-	ret
-
-DRV_CONFIG_1:
-    ld a,b
-    ld b,2
-    or a
-    ret z
-    xor a
-    dec b
-    ret
-
-DRV_CONFIG_2:
-    ld b,c
-    inc b
-    ld c,1
-    xor a
-    ret
-
 ;=====
 ;=====  BEGIN of DEVICE-BASED specific routines
 ;=====
@@ -737,28 +681,25 @@ DEV_STATUS:
 	; bit 4 = virtual DSK inserted,
 	; bit 5 = DSK changed
 	ld a, (ix+WRKAREA.STATUS) 
+	; DSK present?
 	bit 4,a
 	jr z, _DEV_STATUS_ERR
+	; changed?
 	bit 5,a
 	jr z, _DEV_STATUS_NO_CHANGE
 	res 5,a
 	ld (ix+WRKAREA.STATUS),a
-
 	ld a, 2 ; available, changed
 	ret
-
 _DEV_STATUS_NO_CHANGE:
-
 	ld a, 1 ; available, no change
 	ret
 
 _DEV_STATUS_ERR:
-
 	xor	a ; not available
 	ret
 
 _DEV_STATUS_NO_EXIST:
-
 	xor	a ; not available
 	ret
 
@@ -805,29 +746,60 @@ LUN_INFO:
 
 	; device 1, lun 1
 	; TODO: read actual boot sector of DSK file
+	;ld (hl),0 ; block device
+	;inc hl
+	;ld (hl),00h
+	;inc hl
+	;ld (hl),02h ; 512 byte sector
+	;inc hl
+	;ld (hl),0a0h
+	;inc hl
+	;ld (hl),05h
+	;inc hl
+	;ld (hl),00h
+	;inc hl
+	;ld (hl),00h ; 1440 sectors
+	;inc hl
+	;;ld (hl),00000001b ; removable + non-read only + no floppy
+	;inc hl
+	;ld (hl), 80
+	;inc hl
+	;ld (hl), 0 ; cylinders/tracks
+	;inc hl
+	;ld (hl), 1 ; heads
+	;inc hl
+	;ld (hl), 9 ; sectors per track
+
+	; #0
 	ld (hl),0 ; block device
+	; #1
 	inc hl
 	ld (hl),00h
 	inc hl
 	ld (hl),02h ; 512 byte sector
-	inc hl
-	ld (hl),0a0h
-	inc hl
-	ld (hl),05h
+	; #3
 	inc hl
 	ld (hl),00h
 	inc hl
-	ld (hl),00h ; 1440 sectors
+	ld (hl),00h
 	inc hl
-	ld (hl),00000001b ; removable + non-read only + no floppy
+	ld (hl),04h
 	inc hl
-	ld (hl), 80
+	ld (hl),00h ; 262144 sectors
+	; #7
+	inc hl
+	ld (hl),00000000b ; non-removable + non-read only + no floppy
+	; #8
+	inc hl
+	ld (hl), 0
 	inc hl
 	ld (hl), 0 ; cylinders/tracks
+	; #10
 	inc hl
-	ld (hl), 1 ; heads
+	ld (hl), 0 ; heads
+	; #11
 	inc hl
-	ld (hl), 9 ; sectors per track
+	ld (hl), 0 ; sectors per track
 
 	ld a, 0
 	ret

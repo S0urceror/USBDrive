@@ -6,7 +6,7 @@ OUTPUT_DIR = ../dist
 KERNEL_DIR = ../kernel
 
 all: $(OUTPUT_DIR)/driver.rom $(OUTPUT_DIR)/chgbnk.bin $(OUTPUT_DIR)/nextor.rom $(OUTPUT_DIR)/usbfiles.com $(OUTPUT_DIR)/insertdisk.com $(OUTPUT_DIR)/ejectdisk.com
-.PHONY: all clean copy nexrom
+.PHONY: all clean copy
 
 $(OUTPUT_DIR)/chgbnk.bin: chgbnk.asm
 	$(ASM) $(ASMFLAGS) $< 
